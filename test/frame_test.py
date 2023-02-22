@@ -1,23 +1,17 @@
-from pyodide.ffi import create_proxy, to_js
-from js import THREE
-from js import document
-from js import Object
-import asyncio
-import inspect
-import math
 
-class Entity:
+class entity:
     def __init__(self):
         self.__name = "Default"
         self.__position = (0, 0, 0)
         self.__update = list()
-        self.__base_color = (1.0, 1.0, 1.0)
+        self.__base_color = 0
         self.__render = list()
     def __init__(self, *args, **kwargs):
-        self.__name = "Default" if not ('name' in kwargs.keys()) else kwargs['name']
+        self.__name = "Default" if 'name' not in kwargs.keys() else kwargs['name']
         self.__position = (0, 0, 0) if 'position' not in kwargs.keys() else kwargs['position']
-        self.__base_color = (1.0, 1.0, 1.0) if 'color' not in kwargs.keys() else kwargs['color']
+        self.__base_color = 0x00000 if 'color' not in kwargs.keys() else kwargs['color']
         self.__update = list()
+        self.__base_color = 0
         self.__render = list()
     @property
     def name(self):
@@ -37,6 +31,12 @@ class Entity:
     @color.setter
     def color(self, color: int):
         self.__base_color = color
+    @property
+    def update(self):
+        return self.__update
+    @property
+    def redner(self):
+        return self.__render
     
     def b_update(self, dt: float):
         for u in self.__update:
@@ -51,21 +51,18 @@ class Entity:
     def add_render(self, func):
         self.__render.append(func)
 
-    def move(self, x, y, z) -> tuple:
-        return tuple(sum(elem) for elem in zip(self.position, (x, y, z)))
-    
-class System:
+class system:
     def __init__(self):
-        self.__project_name = "Default"
+        self.__project_name = ""
         self.__entitys = list()
-        self.scene = THREE.Scene.new()
-        self.main_camera = THREE.OrthographicCamera.new(-1, 1, 1, -1, 0.1, 1000)
-        self.main_camera.position.z = 2
-        self.renderer = THREE.WebGLRenderer.new()
-        self.renderer.setSize(640, 480)
+        self.scene = None
+        self.main_camera = None
+        #self.main_camera.position.z = 2
+        self.renderer = None
+        #self.renderer.setSize(640, 480)
         self.isRun = True
         self.delta_time = 0.1
-        document.body.appendChild( self.renderer.domElement )
+        #document.body.appendChild( self.renderer.domElement )
 
     def reset_system(self):
         pass
@@ -79,47 +76,49 @@ class System:
         for e in self.__entitys:
             e.b_update(self.delta_time)
             e.b_render()
-        self.renderer.render(self.scene, self.main_camera)
+        #self.renderer.render(self.scene, self.main_camera)
 
     def add_entity(self, e):
         print('Add entity in system')
         self.__entitys.append(e)
-demo_system = System()
+demo_system = system()
 
-class Rectangle(Entity):
+class rectagle(entity):
     def __init__(self, *args, **kwargs):
         super().__init__(args, kwargs)
 
         #setting object geometry and material
-        self.geometry = THREE.BoxGeometry.new()
-        perms = {"color": "#00ff00", "wireframe": False}
-        self.perms = Object.fromEntries(to_js(perms))
-        self.material = THREE.MeshBasicMaterial.new(self.perms)
-        self.obj = THREE.Mesh.new(self.geometry, self.material)
+        #self.geometry = THREE.BoxGeometry.new()
+        perms = {"color": "#ff0000", "wireframe": False}
+        #self.perms = Object.fromEntries(to_js(perms))
+        #self.material = THREE.MeshBasicMaterial.new(self.perms)
+        #self.obj = THREE.Mesh.new(self.geometry, self.material)
         demo_system.add_entity(self)
-        demo_system.scene.add(self.obj)
+        #demo_system.scene.add(self.obj)
 
     def b_update(self, dt: float):
         return super().b_update(dt)
     
     def b_render(self):
-        self.obj.material.color.r = self.color[0]
-        self.obj.material.color.g = self.color[1]
-        self.obj.material.color.b = self.color[2]
-        self.obj.position.x = self.position[0]
-        self.obj.position.y = self.position[1]
-        self.obj.position.z = self.position[2]
-
+        pass
+        #self.obj.material.color.setHex(self.color)
+        #self.obj.position.x = self.position[0]
+        #self.obj.position.y = self.position[1]
+        #self.obj.position.z = self.position[2]
     def add_update(self, func):
         return super().add_update(func)
     def add_render(self, func):
         return super().add_render(func)
-    def move(self, x, y, z) -> tuple:
-        return super().move(x, y, z)
+    
+rect = rectagle()
+rainbow = 0.0
 
-async def main():
-    while True:
-        demo_system.system_loop()
-        await asyncio.sleep(0)
+def test_update(me, dt):
+    global rainbow
+    rainbow = rainbow + dt
+    print("tmp:", rainbow)
+rect.add_update(test_update)
 
-asyncio.ensure_future(main())
+while True:
+    demo_system.system_loop()
+    

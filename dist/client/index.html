@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Three.js TypeScript Tutorials by Sean Bradley : https://sbcode.net/threejs</title>
+        <title>Three.js and pyscript test</title>
         <style>
             body {
                 overflow: hidden;
@@ -18,10 +18,14 @@
     </head>
 
     <body>
+        <script type="module" src="bundle.js"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/0.147.0/three.min.js'></script>
         <script defer src="https://pyscript.net/latest/pyscript.js"></script>
         <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
         
         <py-script src="main.py"></py-script>
+        <div id="replOutput"></div>
+        <py-repl output="replOutput">
+        </py-repl>
     </body>
 </html>
